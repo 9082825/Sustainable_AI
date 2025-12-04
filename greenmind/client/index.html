@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GreenMind: Prompt Transformation</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>GreenMind: Prompt Transformation</h1>
+  </header>
+
+  <main>
+    <section class="input-panel">
+      <h2>Prompt input</h2>
+      <label>Role</label>
+      <textarea id="role" rows="3"></textarea>
+
+      <label>Context</label>
+      <textarea id="context" rows="4"></textarea>
+
+      <label>Expectations</label>
+      <textarea id="expectations" rows="3"></textarea>
+
+      <h3>Set parameters</h3>
+      <div class="params">
+        <div>
+          <label># Layers</label>
+          <input type="number" id="layers" value="4" />
+        </div>
+        <div>
+          <label>Training time (h)</label>
+          <input type="number" id="trainingHours" value="2" />
+        </div>
+        <div>
+          <label>FLOPs/hr</label>
+          <input type="number" id="flopsHr" value="100000000000000000000" />
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button onclick="checkPrompt()">Check Prompt</button>
+        <button onclick="makeItBetter()">Make It Better</button>
+      </div>
+    </section>
+
+    <section class="results-panel">
+      <h2>Results</h2>
+      <div id="loading" style="display:none;">Working…</div>
+      <div id="results"></div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
