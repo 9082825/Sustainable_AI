@@ -2,10 +2,10 @@
 
 Group 2
 
-Abdullahi Abdirizak Mohamed - 9082466
-Albright Maduka Ifechukwude - 9053136
-Jose George - 9082825
-Kamamo Lesley Wanjiku - 8984971
+- Abdullahi Abdirizak Mohamed - 9082466
+- Albright Maduka Ifechukwude - 9053136
+- Jose George - 9082825
+- Kamamo Lesley Wanjiku - 8984971
 
 
 ## 1. Project Overview
