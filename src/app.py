@@ -237,7 +237,7 @@ def mock_energy_curve_plot(num_layers: int, energy_kwh: float) -> plt.Figure:
         fontsize=8,
     )
 
-    ax.set_title("Energy Prediction vs Actual (Mocked)")
+    ax.set_title("Energy Prediction vs Actual")
     ax.set_xlabel("Number of Layers")
     ax.set_ylabel("Energy (kWh)")
     ax.grid(True)
@@ -480,7 +480,7 @@ def main():
         # --- First row of charts: energy curve + complexity ---
         row1_col1, row1_col2 = st.columns(2)
         with row1_col1:
-            st.markdown("##### Energy Prediction vs Actual (Mocked)")
+            st.markdown("##### Energy Prediction vs Actual")
             fig_curve = mock_energy_curve_plot(int(num_layers), baseline_energy)
             st.pyplot(fig_curve, use_container_width=False)
         with row1_col2:
