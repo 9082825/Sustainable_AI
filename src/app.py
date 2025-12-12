@@ -36,7 +36,7 @@ try:
 except ImportError:
     flag_usage_anomaly = None
 
-LOG_PATH = "energy_logs.csv"
+LOG_PATH = "reports\energy_logs.csv"
 
 # --- Use only the heuristic model for nicer-scale energies ---
 USE_TRAINED_MODEL = False

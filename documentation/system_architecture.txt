@@ -1,0 +1,54 @@
+┌──────────────────────────────┐
+│          User (Browser)      │
+│  - enters Role / Context /   │
+│    Expectations              │
+│  - sets layers, hours, FLOPs │
+└──────────────┬───────────────┘
+               │  HTTP
+               ▼
+┌──────────────────────────────────────────────┐
+│           Streamlit App (app.py)            │
+│  - Orchestrates all modules                 │
+│  - Handles Submit / Improve actions         │
+│  - Builds full prompt + token estimate      │
+└───────┬───────────┬───────────────┬─────────┘
+        │           │               │
+        │           │               │
+        │           │               │
+        ▼           ▼               ▼
+┌────────────────┐  ┌──────────────────────┐  ┌──────────────────────┐
+│ Prompt         │  │  Energy Engine       │  │  Anomaly Detector    │
+│ Optimizer      │  │  (energy_model.py +  │  │  (anomaly_detector)  │
+│ (prompt_       │  │   heuristic)         │  │                      │
+│  optimizer.py) │  │                      │  │ - load iso_pipeline  │
+│                │  │ - safe_predict_      │  │ - _build_feature_    │
+│ - parse Role/  │  │   energy(...)        │  │   frame(record)      │
+│   Context/Exp  │  │ - uses num_layers,   │  │ - flag_usage_        │
+│ - simplify     │  │   hours, FLOPs/hr,   │  │   anomaly(record)    │
+│   sections     │  │   prompt_tokens      │  │ - returns            │
+│ - compute      │  │ - outputs kWh        │  │   is_anomaly, score, │
+│   complexity   │  └──────────────────────┘  │   explanation        │
+│   metrics      │                            └──────────────────────┘
+└───────┬────────┘                                      │
+        │                                               │
+        │ simplified prompt +                          │
+        │ metrics                                      │
+        ▼                                               ▼
+┌──────────────────────────────────────────────┐  ┌───────────────────┐
+│         Visualisation Module                 │  │  Model Artifact   │
+│           (visualization.py)                 │  │  iso_pipeline.pkl │
+│  - Before vs After feature bar chart         │  └───────────────────┘
+│  - Energy history histogram                  │
+│  - Token breakdown by section                │
+│  - Anomaly score bar                         │
+└──────────────┬───────────────────────────────┘
+               │
+               ▼
+┌──────────────────────────────────────────────┐
+│     Streamlit UI Output (frontend view)      │
+│  - Metrics: baseline vs optimized kWh        │
+│  - Original vs optimized prompt text boxes   │
+│  - Complexity charts                         │
+│  - Energy distribution & token breakdown     │
+│  - Anomaly banner + score bar                │
+└──────────────────────────────────────────────┘

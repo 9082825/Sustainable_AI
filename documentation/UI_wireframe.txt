@@ -1,0 +1,38 @@
+┌───────────────────────────────────────────────────────────────┐
+│  Header: "Sustainable AI – Energy-Efficient                  │
+│           Prompt & Context Engineering"                      │
+│  Subtitle: short description                                 │
+└───────────────────────────────────────────────────────────────┘
+┌───────────────────────────────┬───────────────────────────────┐
+│ LEFT: Hero Info               │ RIGHT: Prompt & Parameters    │
+│ ---------------------------   │ ----------------------------- │
+│ - Project title / tagline     │ - Card:                       │
+│ - What the app does           │   Role [text area]            │
+│                               │   Context [text area]         │
+│                               │   Expectations [text area]    │
+│                               │                               │
+│                               │ - Parameters:                 │
+│                               │   # Layers                    │
+│                               │   Training time (hrs)         │
+│                               │   FLOPs/hr (10^x)             │
+│                               │                               │
+│                               │ - Buttons:                    │
+│                               │   [Submit] [Improve]          │
+└───────────────────────────────┴───────────────────────────────┘
+
+After submit:
+┌───────────────────────────────────────────────────────────────┐
+│ Section: Energy prediction & prompt comparison                │
+│  - Left: baseline kWh, original prompt, token count           │
+│  - Right: alternative kWh, optimized prompt, similarity       │
+└───────────────────────────────────────────────────────────────┘
+┌───────────────────────────────┬───────────────────────────────┐
+│ Energy vs Actual (mocked)     │ Complexity Before vs After    │
+│ line chart                    │ bar chart                     │
+└───────────────────────────────┴───────────────────────────────┘
+┌───────────────────────────────┬───────────────────────────────┐
+│ Energy history histogram      │ Token breakdown by section    │
+└───────────────────────────────┴───────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│ Anomaly Detection Banner + Score Bar                          │
+└───────────────────────────────────────────────────────────────┘

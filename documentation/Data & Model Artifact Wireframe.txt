@@ -1,0 +1,27 @@
+                 ┌──────────────────────────────┐
+                 │ Synthetic Training Data      │
+                 │  data/synthetic_energy_*.csv│
+                 └───────────────┬─────────────┘
+                                 │
+                                 ▼
+                    (Notebooks: prediction_engine.ipynb,
+                     anomaly_detection.ipynb)
+                                 │
+                                 ▼
+         ┌──────────────────────────────┬────────────────────────┐
+         │ Energy model (optional)     │ Anomaly model (used)   │
+         │ e.g., regression            │ IsolationForest +      │
+         │                              │ StandardScaler         │
+         └──────────────┬───────────────┴───────────────┬────────┘
+                        │                               │
+                        ▼                               ▼
+          ┌──────────────────────┐        ┌─────────────────────────┐
+          │ energy_model.py      │        │ model/anomaly_detector/ │
+          │ (wrapped in app.py)  │        │     iso_pipeline.pkl    │
+          └──────────────────────┘        └─────────────────────────┘
+
+Additionally:
+┌──────────────────────────────┐
+│ energy_logs.csv              │  ← appended by app.py on each run
+│ historical energy_kwh values │  for histogram visualisations
+└──────────────────────────────┘
