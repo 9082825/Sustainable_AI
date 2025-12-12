@@ -84,26 +84,53 @@ FILLER_PATTERNS = [
 ]
 
 
-def _simplify_text(prompt: str) -> str:
+def _simplify_section(text: str) -> str:
     """
-    Light-weight prompt simplifier:
-    - normalize whitespace
+    Light-weight section simplifier:
+    - keep whole sentences
+    - limit to at most 2–3 key sentences
     - remove common filler phrases
-    - keep sentences intact (NO hard truncation)
     """
-    text = _normalize_whitespace(prompt)
+    text = _normalize_whitespace(text)
+    sentences = _split_sentences(text)
+
+    if len(sentences) <= 2:
+        keep = sentences
+    else:
+        keep = sentences[:2]
+
+    core = ". ".join(keep)
+    if core and not core.endswith("."):
+        core += "."
 
     for pat in FILLER_PATTERNS:
-        text = re.sub(pat, "", text, flags=re.IGNORECASE)
+        core = re.sub(pat, "", core, flags=re.IGNORECASE)
 
-    # collapse multiple spaces created by removals
-    text = re.sub(r"\s{2,}", " ", text)
-    return text.strip()
+    core = re.sub(r"\s{2,}", " ", core).strip()
+    return core
+
+
+def _parse_structured(prompt: str):
+    """
+    Try to extract Role / Context / Expectations from a structured prompt.
+    Returns (role, context, expectations) or (None, None, None).
+    """
+    pattern = r"Role:\s*(.*?)\s*Context:\s*(.*?)\s*Expectations:\s*(.*)"
+    m = re.search(pattern, prompt, flags=re.IGNORECASE | re.DOTALL)
+    if not m:
+        return None, None, None
+    role, context, expectations = [part.strip() for part in m.groups()]
+    return role, context, expectations
 
 
 def optimize_prompt(prompt: str) -> dict:
     """
-    Main API called by app.py
+    Main API called by app.py.
+
+    Ensures the simplified prompt STILL has the structure:
+      Role: ...
+      Context: ...
+      Expectations: ...
 
     Returns:
       {
@@ -116,15 +143,32 @@ def optimize_prompt(prompt: str) -> dict:
     """
     prompt = _normalize_whitespace(prompt)
 
-    simplified = _simplify_text(prompt)
+    # Try to split into sections first
+    role_raw, context_raw, exp_raw = _parse_structured(prompt)
+
+    if role_raw is not None:
+        # Simplify each section separately, but keep labels
+        role_s = _simplify_section(role_raw) or role_raw
+        context_s = _simplify_section(context_raw) or context_raw
+        exp_s = _simplify_section(exp_raw) or exp_raw
+
+        simplified_prompt = (
+            f"Role: {role_s} "
+            f"Context: {context_s} "
+            f"Expectations: {exp_s}"
+        )
+    else:
+        # If we can't parse structure, fall back to whole-text simplification
+        role_s = context_s = exp_s = ""
+        simplified_prompt = _simplify_section(prompt)
 
     complexity_before = _compute_complexity(prompt)
-    complexity_after = _compute_complexity(simplified)
-    sim = _semantic_similarity(prompt, simplified)
+    complexity_after = _compute_complexity(simplified_prompt)
+    sim = _semantic_similarity(prompt, simplified_prompt)
 
     return {
         "original_prompt": prompt,
-        "simplified_prompt": simplified,
+        "simplified_prompt": simplified_prompt,
         "complexity_before": complexity_before,
         "complexity_after": complexity_after,
         "semantic_similarity": float(sim),

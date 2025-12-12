@@ -3,6 +3,9 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+# top of app.py (near other imports)
+from pandas.errors import ParserError
+
 
 from sklearn.linear_model import LinearRegression
 
@@ -34,6 +37,9 @@ except ImportError:
     flag_usage_anomaly = None
 
 LOG_PATH = "energy_logs.csv"
+
+# --- Use only the heuristic model for nicer-scale energies ---
+USE_TRAINED_MODEL = False
 
 # --- Global matplotlib style: smaller, consistent fonts ---
 plt.rcParams.update({
@@ -90,7 +96,8 @@ def safe_predict_energy(
     batch_size: int = 32,
     model=None,
 ) -> float:
-    if predict_energy is None:
+    # For the demo, always use heuristic to avoid crazy scales
+    if (not USE_TRAINED_MODEL) or (predict_energy is None):
         return fallback_predict_energy(num_layers, training_hours, flops_per_hour, prompt_tokens)
 
     try:
@@ -177,13 +184,25 @@ def safe_flag_anomaly(
 
 
 def log_energy(energy_kwh: float, path: str = LOG_PATH) -> None:
+    """
+    Append current energy_kwh to a CSV for historical plots.
+    If the existing file is corrupted or has inconsistent columns,
+    we ignore it and start a fresh log.
+    """
     row = pd.DataFrame([{"energy_kwh": energy_kwh}])
+
     try:
         existing = pd.read_csv(path)
+        # Keep only the energy_kwh column if it exists
+        if "energy_kwh" in existing.columns:
+            existing = existing[["energy_kwh"]]
         df = pd.concat([existing, row], ignore_index=True)
-    except FileNotFoundError:
+    except (FileNotFoundError, ParserError):
+        # No file or bad file → start fresh
         df = row
+
     df.to_csv(path, index=False)
+
 
 
 def mock_energy_curve_plot(num_layers: int, energy_kwh: float) -> plt.Figure:
@@ -306,33 +325,46 @@ def main():
     with col_right:
         st.markdown("### Enter prompt here:")
 
-        # Use session_state so Improve can overwrite the fields
+        # We keep our own "default" text in session_state, but DO NOT use keys on the widgets.
         default_role = (
             "You are an AI assistant helping ML engineers design "
             "energy-efficient large language model workflows."
         )
         default_context = (
             "Our team is building a customer-support chatbot using a large language model "
-            "hosted in the cloud."
+            "hosted in the cloud. We have historical chat logs, limited GPU budget, and strict "
+            "latency targets. Right now, prompts are long and repetitive."
         )
         default_expectations = (
-            "Suggest a concise prompt template that reduces token usage without harming answer quality."
+            "Remove redundancy and unnecessary wording. Briefly explain why the optimized "
+            "version should reduce token usage and energy while keeping responses accurate."
         )
 
-        for key, default in [
-            ("role", default_role),
-            ("context", default_context),
-            ("expectations", default_expectations),
-        ]:
-            if key not in st.session_state:
-                st.session_state[key] = default
+        if "role_default" not in st.session_state:
+            st.session_state["role_default"] = default_role
+        if "context_default" not in st.session_state:
+            st.session_state["context_default"] = default_context
+        if "expectations_default" not in st.session_state:
+            st.session_state["expectations_default"] = default_expectations
 
         with st.form("sustainable_form"):
             st.markdown('<div class="prompt-card">', unsafe_allow_html=True)
 
-            role = st.text_area("Role", key="role", height=70)
-            context = st.text_area("Context", key="context", height=70)
-            expectations = st.text_area("Expectations", key="expectations", height=70)
+            role = st.text_area(
+                "Role",
+                value=st.session_state["role_default"],
+                height=70,
+            )
+            context = st.text_area(
+                "Context",
+                value=st.session_state["context_default"],
+                height=70,
+            )
+            expectations = st.text_area(
+                "Expectations",
+                value=st.session_state["expectations_default"],
+                height=70,
+            )
 
             st.markdown("</div>", unsafe_allow_html=True)
 
@@ -372,8 +404,9 @@ def main():
         full_prompt = f"Role:\n{role}\n\nContext:\n{context}\n\nExpectations:\n{expectations}"
         prompt_tokens = estimate_prompt_tokens(full_prompt)
 
+        # (We still create this, even if we only use the heuristic)
         model = None
-        if load_energy_model is not None:
+        if USE_TRAINED_MODEL and (load_energy_model is not None):
             try:
                 model = load_energy_model()
             except Exception as e:
@@ -412,15 +445,15 @@ def main():
             prompt_tokens=prompt_tokens,
         )
 
-        # If the user clicked "Improve", push the optimized text back into the inputs
+        # If the user clicked "Improve", push the optimized text back into defaults
         if improve_clicked:
             r_new, c_new, e_new = parse_structured_prompt(simplified_prompt)
             if r_new:
-                st.session_state.role = r_new
+                st.session_state["role_default"] = r_new
             if c_new:
-                st.session_state.context = c_new
+                st.session_state["context_default"] = c_new
             if e_new:
-                st.session_state.expectations = e_new
+                st.session_state["expectations_default"] = e_new
 
         # ---------- Results ----------
         st.markdown("---")
